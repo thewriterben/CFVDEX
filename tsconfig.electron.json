@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "baseUrl": ".",
+    "paths": {
+      "@shared/*": ["src/shared/*"]
+    },
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "outDir": "dist-electron",
+    "rootDir": ".",
+    "types": ["node", "electron"]
+  },
+  "include": ["electron/**/*", "src/network/**/*.ts", "src/engine/**/*.ts", "src/wallet/**/*.ts", "src/cfv/**/*.ts", "src/database/**/*.ts", "src/shared/**/*.ts"],
+  "exclude": ["node_modules", "dist", "release"]
+}
