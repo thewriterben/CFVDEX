@@ -5,7 +5,7 @@ import Panel from '../components/Panel';
 import TradeForm from '../components/TradeForm';
 import type { Order } from '@shared/types';
 import { getPairs } from '@shared/constants';
-import { getOrderBook } from '../api';
+import { getOrderBook, cancelOrder } from '../api';
 
 export default function TradePage(): JSX.Element {
   const [pair, setPair] = useState(getPairs()[0]);
@@ -21,6 +21,10 @@ export default function TradePage(): JSX.Element {
     return () => clearInterval(interval);
   }, [refreshOrders]);
 
+  const handleCancel = (id: string): void => {
+    cancelOrder(id).then(refreshOrders).catch(() => {});
+  };
+
   return (
     <div className="grid gap-4 lg:grid-cols-2">
       <Panel>
@@ -33,11 +37,7 @@ export default function TradePage(): JSX.Element {
       </Panel>
       <Panel>
         <h2 className="mb-3 text-lg font-semibold">Order Book</h2>
-        <OrderBookComponent orders={orders} onCancel={(id) => {
-          import('../api').then(({ cancelOrder }) => {
-            cancelOrder(id).then(refreshOrders).catch(() => {});
-          });
-        }} />
+        <OrderBookComponent orders={orders} onCancel={handleCancel} />
       </Panel>
     </div>
   );
