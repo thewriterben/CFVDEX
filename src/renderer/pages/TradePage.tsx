@@ -10,9 +10,12 @@ import { getOrderBook, cancelOrder } from '../api';
 export default function TradePage(): JSX.Element {
   const [pair, setPair] = useState(getPairs()[0]);
   const [orders, setOrders] = useState<Order[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   const refreshOrders = useCallback(() => {
-    getOrderBook(pair).then((data) => setOrders(data as Order[])).catch(() => {});
+    getOrderBook(pair)
+      .then((data) => { setOrders(data as Order[]); setError(null); })
+      .catch(() => setError('Failed to load order book'));
   }, [pair]);
 
   useEffect(() => {
@@ -27,6 +30,7 @@ export default function TradePage(): JSX.Element {
 
   return (
     <div className="grid gap-4 lg:grid-cols-2">
+      {error && <p className="col-span-full text-sm text-amber-300">{error}</p>}
       <Panel>
         <h2 className="mb-3 text-lg font-semibold">Trading Pair</h2>
         <PairSelector pair={pair} onChange={setPair} />

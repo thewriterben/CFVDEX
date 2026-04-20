@@ -8,19 +8,23 @@ import type { NodeStatus } from '../api';
 export default function PeersPage(): JSX.Element {
   const [peers, setPeers] = useState<PeerStatus[]>([]);
   const [nodeStatus, setNodeStatus] = useState<NodeStatus | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    getPeers().then(setPeers).catch(() => {});
-    getNodeStatus().then(setNodeStatus).catch(() => {});
-    const interval = setInterval(() => {
-      getPeers().then(setPeers).catch(() => {});
+    const load = (): void => {
+      getPeers()
+        .then((data) => { setPeers(data); setError(null); })
+        .catch(() => setError('Failed to load peers'));
       getNodeStatus().then(setNodeStatus).catch(() => {});
-    }, 10_000);
+    };
+    load();
+    const interval = setInterval(load, 10_000);
     return () => clearInterval(interval);
   }, []);
 
   return (
     <div className="grid gap-4">
+      {error && <p className="text-sm text-amber-300">{error}</p>}
       <Panel>
         <h2 className="mb-3 text-lg font-semibold">Node Info</h2>
         {nodeStatus ? (

@@ -9,21 +9,23 @@ export default function DashboardPage(): JSX.Element {
   const [metrics, setMetrics] = useState<CFVCacheEntry[]>([]);
   const [nodeStatus, setNodeStatus] = useState<NodeStatus | null>(null);
   const [recentTrades, setRecentTrades] = useState<Trade[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    getCFVMetrics().then(setMetrics).catch(() => {});
-    getNodeStatus().then(setNodeStatus).catch(() => {});
-    getTrades().then((trades) => setRecentTrades(trades.slice(-5).reverse())).catch(() => {});
-
-    const interval = setInterval(() => {
-      getCFVMetrics().then(setMetrics).catch(() => {});
+    const load = (): void => {
+      setError(null);
+      getCFVMetrics().then(setMetrics).catch(() => setError('Failed to load CFV metrics'));
       getNodeStatus().then(setNodeStatus).catch(() => {});
-    }, 30_000);
+      getTrades().then((trades) => setRecentTrades(trades.slice(-5).reverse())).catch(() => {});
+    };
+    load();
+    const interval = setInterval(load, 30_000);
     return () => clearInterval(interval);
   }, []);
 
   return (
     <div className="grid gap-4">
+      {error && <p className="text-sm text-amber-300">{error}</p>}
       <Panel>
         <h2 className="mb-2 text-lg font-semibold">Node Status</h2>
         {nodeStatus ? (

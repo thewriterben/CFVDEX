@@ -5,15 +5,17 @@ export default function Settings(): JSX.Element {
   const [bootstrap, setBootstrap] = useState('/dns4/bootstrap.cfvdex.local/tcp/4001/p2p/peer-id');
   const [cfvUrl, setCfvUrl] = useState('http://localhost:3001');
   const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     getSettings().then((settings) => {
       if (settings.bootstrapNode) setBootstrap(settings.bootstrapNode);
       if (settings.cfvAgentUrl) setCfvUrl(settings.cfvAgentUrl);
-    }).catch(() => {});
+    }).catch(() => setError('Failed to load settings'));
   }, []);
 
   const handleSave = async (): Promise<void> => {
+    setError(null);
     try {
       await saveSettings({
         bootstrapNode: bootstrap,
@@ -22,7 +24,7 @@ export default function Settings(): JSX.Element {
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } catch {
-      // Ignore
+      setError('Failed to save settings');
     }
   };
 
@@ -43,6 +45,7 @@ export default function Settings(): JSX.Element {
         Save Settings
       </button>
       {saved && <p className="text-sm text-emerald-400">Settings saved!</p>}
+      {error && <p className="text-sm text-rose-400">{error}</p>}
     </div>
   );
 }

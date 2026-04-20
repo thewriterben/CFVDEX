@@ -156,8 +156,13 @@ export function createRouter(deps: RouterDeps): Router {
   router.get('/swaps', (req, res) => {
     try {
       const state = req.query.state as string | undefined;
+      const validStates = ['INITIATED', 'ACCEPTED', 'COMPLETED', 'REFUNDED', 'EXPIRED'];
+      if (state && !validStates.includes(state)) {
+        res.status(400).json({ error: `Invalid state. Must be one of: ${validStates.join(', ')}` });
+        return;
+      }
       const swaps = state
-        ? db.findSwapsByState(state as any)
+        ? db.findSwapsByState(state as 'INITIATED' | 'ACCEPTED' | 'COMPLETED' | 'REFUNDED' | 'EXPIRED')
         : db.findAllSwaps();
       res.json(swaps);
     } catch (err) {

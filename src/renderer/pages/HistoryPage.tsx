@@ -7,9 +7,12 @@ import { getTrades } from '../api';
 export default function HistoryPage(): JSX.Element {
   const [trades, setTrades] = useState<Trade[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>('');
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    getTrades(undefined, statusFilter || undefined).then(setTrades).catch(() => {});
+    getTrades(undefined, statusFilter || undefined)
+      .then((data) => { setTrades(data); setError(null); })
+      .catch(() => setError('Failed to load trade history'));
   }, [statusFilter]);
 
   return (
@@ -27,6 +30,7 @@ export default function HistoryPage(): JSX.Element {
           <option value="failed">Failed</option>
         </select>
       </div>
+      {error && <p className="mb-2 text-sm text-amber-300">{error}</p>}
       <TradeHistory trades={trades} />
     </Panel>
   );

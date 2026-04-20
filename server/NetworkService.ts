@@ -96,10 +96,11 @@ export class NetworkService {
   private registerSwapHandler(node: any): void {
     try {
       node.handle(SWAP_PROTOCOL_ID, async ({ stream }: { stream: any }) => {
-        let raw = '';
+        const chunks: Uint8Array[] = [];
         for await (const chunk of stream.source) {
-          raw += new TextDecoder().decode(chunk.subarray ? chunk.subarray() : chunk);
+          chunks.push(chunk.subarray ? chunk.subarray() : chunk);
         }
+        const raw = new TextDecoder().decode(Buffer.concat(chunks));
         const message = JSON.parse(raw) as SwapMessage;
         this.handleSwapMessage(message);
       });
