@@ -55,7 +55,7 @@ export class SwapEngine {
       throw new Error('Cannot refund completed swap.');
     }
 
-    swap.state = Date.now() >= swap.expiresAt ? 'REFUNDED' : 'EXPIRED';
+    swap.state = Date.now() >= swap.expiresAt ? 'EXPIRED' : 'REFUNDED';
     return swap;
   }
 
