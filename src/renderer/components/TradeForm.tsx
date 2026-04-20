@@ -1,22 +1,39 @@
 import { useState } from 'react';
+import { placeOrder } from '../api';
 
 interface TradeFormProps {
   pair: string;
+  onOrderPlaced?: () => void;
 }
 
-export default function TradeForm({ pair }: TradeFormProps): JSX.Element {
+export default function TradeForm({ pair, onOrderPlaced }: TradeFormProps): JSX.Element {
   const [side, setSide] = useState<'buy' | 'sell'>('buy');
   const [price, setPrice] = useState('0');
   const [amount, setAmount] = useState('0');
+  const [status, setStatus] = useState<{ type: 'success' | 'error' | 'warning'; message: string } | null>(null);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
     event.preventDefault();
-    await window.cfvdex.placeOrder({
-      pair,
-      side,
-      price: Number(price),
-      amount: Number(amount)
-    });
+    setStatus(null);
+
+    try {
+      const result = await placeOrder({
+        pair,
+        side,
+        price: Number(price),
+        amount: Number(amount)
+      });
+
+      if (result.cfvWarning) {
+        setStatus({ type: 'warning', message: `Order placed (${result.id.slice(0, 12)}…). Warning: ${result.cfvWarning}` });
+      } else {
+        setStatus({ type: 'success', message: `Order placed: ${result.id.slice(0, 12)}…` });
+      }
+
+      onOrderPlaced?.();
+    } catch (err) {
+      setStatus({ type: 'error', message: err instanceof Error ? err.message : 'Failed to place order' });
+    }
   };
 
   return (
@@ -30,6 +47,15 @@ export default function TradeForm({ pair }: TradeFormProps): JSX.Element {
       <button className="rounded bg-accent px-3 py-2 font-medium text-slate-900" type="submit">
         Place Order
       </button>
+      {status && (
+        <p className={`text-sm ${
+          status.type === 'success' ? 'text-emerald-400' :
+          status.type === 'warning' ? 'text-amber-300' :
+          'text-rose-400'
+        }`}>
+          {status.message}
+        </p>
+      )}
     </form>
   );
 }

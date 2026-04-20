@@ -1,30 +1,25 @@
-import { useMemo, useState } from 'react';
-import OrderBook from '../components/OrderBook';
+import { useCallback, useEffect, useState } from 'react';
+import OrderBookComponent from '../components/OrderBook';
 import PairSelector from '../components/PairSelector';
 import Panel from '../components/Panel';
 import TradeForm from '../components/TradeForm';
 import type { Order } from '@shared/types';
 import { getPairs } from '@shared/constants';
+import { getOrderBook } from '../api';
 
 export default function TradePage(): JSX.Element {
   const [pair, setPair] = useState(getPairs()[0]);
+  const [orders, setOrders] = useState<Order[]>([]);
 
-  const orders: Order[] = useMemo(
-    () => [
-      {
-        id: 'order-1',
-        makerPeerId: 'peer-alpha-001',
-        pair,
-        side: 'buy',
-        price: 0.024,
-        amount: 1000,
-        timestamp: Date.now(),
-        ttl: 60000,
-        signature: 'stub-signature'
-      }
-    ],
-    [pair]
-  );
+  const refreshOrders = useCallback(() => {
+    getOrderBook(pair).then((data) => setOrders(data as Order[])).catch(() => {});
+  }, [pair]);
+
+  useEffect(() => {
+    refreshOrders();
+    const interval = setInterval(refreshOrders, 5000);
+    return () => clearInterval(interval);
+  }, [refreshOrders]);
 
   return (
     <div className="grid gap-4 lg:grid-cols-2">
@@ -34,11 +29,15 @@ export default function TradePage(): JSX.Element {
       </Panel>
       <Panel>
         <h2 className="mb-3 text-lg font-semibold">Place Order</h2>
-        <TradeForm pair={pair} />
+        <TradeForm pair={pair} onOrderPlaced={refreshOrders} />
       </Panel>
       <Panel>
         <h2 className="mb-3 text-lg font-semibold">Order Book</h2>
-        <OrderBook orders={orders} />
+        <OrderBookComponent orders={orders} onCancel={(id) => {
+          import('../api').then(({ cancelOrder }) => {
+            cancelOrder(id).then(refreshOrders).catch(() => {});
+          });
+        }} />
       </Panel>
     </div>
   );

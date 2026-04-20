@@ -5,12 +5,12 @@ import reactRefresh from 'eslint-plugin-react-refresh';
 
 export default tseslint.config(
   {
-    ignores: ['dist/**', 'dist-electron/**', 'release/**', 'node_modules/**', '*.cjs']
+    ignores: ['dist/**', 'dist-electron/**', 'dist-server/**', 'release/**', 'node_modules/**', '*.cjs']
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
-    files: ['src/renderer/**/*.{ts,tsx}', 'electron/**/*.ts', 'src/**/*.{ts,tsx}'],
+    files: ['src/renderer/**/*.{ts,tsx}', 'server/**/*.ts', 'src/**/*.{ts,tsx}'],
     languageOptions: {
       parserOptions: {
         ecmaVersion: 2022,
